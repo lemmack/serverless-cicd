@@ -1,7 +1,25 @@
-// src/index.ts
-const message: string = "Hello from Service A (TypeScript!)";
+// service-a/src/index.ts
+import { Handler } from 'aws-lambda'; // Optional: Provides type safety
 
-console.log(message);
+// Define the handler function
+export const handler: Handler = async (event, context) => {
+  // event: Contains data passed to the function (we don't use it yet)
+  // context: Provides info about the invocation, function, execution env
 
-// In a real serverless function, you'd export a handler function,
-// but for now, we just log a message to test compilation and execution.
+  const message: string = "Hello from Service A (v2 - Deployed via CI/CD!)"; 
+  console.log(message); // This will appear in CloudWatch Logs
+
+  // Return a response object (common format for API Gateway integration later)
+  const response = {
+    statusCode: 200, // HTTP Status Code: OK
+    headers: {
+       "Content-Type": "application/json" // Indicate JSON content
+    },
+    body: JSON.stringify({ // The actual response data, as a JSON string
+       message: message,
+       eventData: event // Let's include the event data for inspection
+    }),
+  };
+
+  return response;
+};
