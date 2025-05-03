@@ -59,4 +59,23 @@ jobs:
           echo "Running tests..."
           echo "No real tests configured yet." 
       
-      # Deployment steps will be added below here later...
+     # Step 6: Create deployment package (.zip file)
+      - name: Package deployment zip
+        run: |
+          cd ${{ env.SERVICE_DIR }} # Go into service-a
+          cd dist # Go into the build output directory
+          echo "Creating deployment package..."
+          # Zip the contents of the dist directory
+          zip -r ../deployment-package.zip . 
+          cd .. # Go back to service-a directory
+          echo "Deployment package created: $(ls -l deployment-package.zip)"
+
+      # Step 7: Deploy to AWS Lambda
+      - name: Deploy to Lambda
+        run: |
+          cd ${{ env.SERVICE_DIR }} # Ensure we are in service-a directory for context
+          echo "Deploying deployment-package.zip to Lambda function serverless-project-service-a..."
+          aws lambda update-function-code \
+            --function-name serverless-project-service-a \
+            --zip-file fileb://deployment-package.zip
+          echo "Deployment complete!"
