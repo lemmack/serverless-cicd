@@ -1,21 +1,62 @@
 # .github/workflows/deploy-service-a.yml
 
-name: Deploy Service A to AWS Lambda # Name of the workflow shown on GitHub
+name: Deploy Service A to AWS Lambda
 
-on: # Trigger configuration
-  push: # Run on pushes to the repository
+on:
+  push:
     branches:
-      - main # Only run for pushes to the 'main' branch
-    paths: # Only run if files change within the service-a directory
-      - 'service-a/**' 
-      # Also run if this workflow file itself changes:
-      - '.github/workflows/deploy-service-a.yml' 
+      - main
+    paths:
+      - 'service-a/**'
+      - '.github/workflows/deploy-service-a.yml'
 
-jobs: # Container for all the jobs the workflow will run
-  build_and_deploy_service_a: # Name of the job (you can choose your own)
-    runs-on: ubuntu-latest # Specify the runner environment (Linux is common)
-    
-    steps: # Sequence of tasks to execute
-      # Steps will go here...
-      - name: Placeholder Step # A temporary step
-        run: echo "Workflow setup complete. Steps to be added."
+jobs:
+  build_and_deploy_service_a:
+    runs-on: ubuntu-latest
+    # Define environment variables for the job
+    env:
+      SERVICE_DIR: service-a # Directory for Service A
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4 # Gets your code into the runner
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Use Node.js version 22.x (match your Lambda runtime)
+          cache: 'npm' # Enable caching for npm dependencies in the service directory
+          cache-dependency-path: ${{ env.SERVICE_DIR }}/package-lock.json
+
+      # Step 3: Configure AWS credentials
+      # Uses the secrets you added to GitHub repository settings
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 4: Install dependencies and build TypeScript code for Service A
+      - name: Build Service A
+        run: | 
+          cd ${{ env.SERVICE_DIR }}
+          echo "Current directory: $(pwd)"
+          echo "Listing files: $(ls -la)"
+          echo "Installing dependencies..."
+          npm ci
+          echo "Building code..."
+          npm run build
+          echo "Build complete. Listing dist folder:"
+          ls -la dist/
+
+      # Step 5: Run tests (Placeholder - Implement actual tests later!)
+      - name: Run tests
+        run: |
+          cd ${{ env.SERVICE_DIR }}
+          echo "Running tests..."
+          echo "No real tests configured yet." 
+      
+      # Deployment steps will be added below here later...
