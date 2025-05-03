@@ -2,8 +2,6 @@
 
 This project demonstrates a basic serverless application consisting of two independent microservices deployed on AWS Lambda and exposed via AWS API Gateway. It features automated deployment using CI/CD pipelines built with GitHub Actions.
 
-This project serves as a practical exercise combining concepts from **Project 5 (Serverless Microservices Application)** and **Project 8 (DevOps CI/CD Pipeline)** described in the "Strategic Portfolio Projects for Aspiring Software Developers in Canada (2025)" guide.
-
 ## Live API Endpoints
 
 You can test the live deployed services here:
