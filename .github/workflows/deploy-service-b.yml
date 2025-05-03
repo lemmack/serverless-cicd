@@ -1,0 +1,81 @@
+# .github/workflows/deploy-service-b.yml
+
+name: Deploy Service B to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'service-b/**'
+      - '.github/workflows/deploy-service-b.yml'
+
+jobs:
+  build_and_deploy_service_b:
+    runs-on: ubuntu-latest
+    # Define environment variables for the job
+    env:
+      SERVICE_DIR: service-b # Directory for Service B
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4 # Gets your code into the runner
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Use Node.js version 22.x (match your Lambda runtime)
+          cache: 'npm' # Enable caching for npm dependencies in the service directory
+          cache-dependency-path: ${{ env.SERVICE_DIR }}/package-lock.json
+
+      # Step 3: Configure AWS credentials
+      # Uses the secrets you added to GitHub repository settings
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 4: Install dependencies and build TypeScript code for Service B
+      - name: Build Service B
+        run: | 
+          cd ${{ env.SERVICE_DIR }}
+          echo "Current directory: $(pwd)"
+          echo "Listing files: $(ls -la)"
+          echo "Installing dependencies..."
+          npm ci
+          echo "Building code..."
+          npm run build
+          echo "Build complete. Listing dist folder:"
+          ls -la dist/
+
+      # Step 5: Run tests (Placeholder - Implement actual tests later!)
+      - name: Run tests
+        run: |
+          cd ${{ env.SERVICE_DIR }}
+          echo "Running tests..."
+          echo "No real tests configured yet." 
+      
+     # Step 6: Create deployment package (.zip file)
+      - name: Package deployment zip
+        run: |
+          cd ${{ env.SERVICE_DIR }} # Go into service-b
+          cd dist # Go into the build output directory
+          echo "Creating deployment package..."
+          # Zip the contents of the dist directory
+          zip -r ../deployment-package.zip . 
+          cd .. # Go back to service-b directory
+          echo "Deployment package created: $(ls -l deployment-package.zip)"
+
+      # Step 7: Deploy to AWS Lambda
+      - name: Deploy to Lambda
+        run: |
+          cd ${{ env.SERVICE_DIR }} # Ensure we are in service-b directory for context
+          echo "Deploying deployment-package.zip to Lambda function serverless-project-service-b..."
+          aws lambda update-function-code \
+            --function-name serverless-project-service-b \
+            --zip-file fileb://deployment-package.zip
+          echo "Deployment complete!"
