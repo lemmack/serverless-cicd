@@ -1,6 +1,22 @@
 // service-b/src/index.ts
-const message: string = "World from Service B (TypeScript!)";
+import { Handler } from 'aws-lambda'; // Optional: Provides type safety
 
-console.log(message);
+// Define the handler function
+export const handler: Handler = async (event, context) => {
+  const message: string = "World from Service B (v2 - CI/CD works!)";
+  console.log(message); // This will appear in CloudWatch Logs
 
-// Again, just logging for now to test compilation.
+  // Return a response object
+  const response = {
+    statusCode: 200,
+    headers: {
+       "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+       message: message,
+       eventData: event
+    }),
+  };
+
+  return response;
+};
