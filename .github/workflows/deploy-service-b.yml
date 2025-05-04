@@ -4,7 +4,7 @@ name: Deploy Service B to AWS Lambda
 
 concurrency:
   group: deploy-portfolio-app-stack-${{ github.ref }} # Group based on stack + branch
-  cancel-in-progress: true # Cancel older runs in this group if a new one starts
+  cancel-in-progress: false
 
 on:
   push:
