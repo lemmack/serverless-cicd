@@ -1,0 +1,105 @@
+# .github/workflows/deploy-stack.yml
+
+name: Deploy Application Stack (SAM) # Unified workflow name
+
+# Trigger on pushes to main if relevant files change
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'service-a/**' # Changes in Service A code
+      - 'service-b/**' # Changes in Service B code
+      - 'template.yaml' # Changes to the infrastructure definition
+      - '.github/workflows/deploy-stack.yml' # Changes to this workflow file
+
+# Ensure only one deployment runs at a time for the stack on this branch
+concurrency:
+  group: deploy-portfolio-app-stack-${{ github.ref }}
+  cancel-in-progress: false # Queue jobs instead of canceling
+
+jobs:
+  build_and_deploy_stack: # Single job for the whole process
+    runs-on: ubuntu-latest
+    env:
+      STACK_NAME: portfolio-app-stack
+      # Define your S3 bucket name as an env var for easier reference (optional)
+      SAM_ARTIFACT_BUCKET: mack-portfolio-sam-artifacts-ca-central-1 # Replace with your actual bucket name!
+
+    steps:
+      # 1. Get the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm' # General npm caching
+
+      # 3. Configure AWS credentials using secrets
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 4. Build Service A (Install deps & compile TS)
+      - name: Build Service A
+        run: |
+          echo "Building Service A..."
+          cd service-a
+          npm ci
+          npm run build
+          cd ..
+          echo "Service A build complete."
+
+      # 5. Build Service B (Install deps & compile TS)
+      - name: Build Service B
+        run: |
+          echo "Building Service B..."
+          cd service-b
+          npm ci
+          npm run build
+          cd ..
+          echo "Service B build complete."
+
+      # 6. Run tests (Placeholder for Service A)
+      - name: Run tests for Service A
+        run: |
+          cd service-a
+          echo "Running tests for Service A..."
+          # npm test
+          echo "No real tests configured yet."
+          cd ..
+
+      # 7. Run tests (Placeholder for Service B)
+      - name: Run tests for Service B
+        run: |
+          cd service-b
+          echo "Running tests for Service B..."
+          # npm test
+          echo "No real tests configured yet."
+          cd ..
+
+      # 8. Install AWS SAM CLI
+      - name: Install AWS SAM CLI
+        run: pip install aws-sam-cli
+
+      # 9. Run sam build (Builds BOTH functions based on template)
+      # Creates deployment artifacts in .aws-sam/build
+      - name: Run sam build
+        run: sam build --template template.yaml
+
+      # 10. Deploy using AWS SAM (Deploys the entire stack once)
+      - name: Deploy using AWS SAM
+        run: |
+          sam deploy --stack-name ${{ env.STACK_NAME }} \
+            --s3-bucket ${{ env.SAM_ARTIFACT_BUCKET }} \
+            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            --region ${{ secrets.AWS_REGION }} \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+          echo "SAM deployment complete!"
