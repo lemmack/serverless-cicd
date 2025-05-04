@@ -3,7 +3,7 @@ import { Handler } from 'aws-lambda'; // Optional: Provides type safety
 
 // Define the handler function
 export const handler: Handler = async (event, context) => {
-  const message: string = "World from Service B (v5-B)";
+  const message: string = "World from Service B (v6-B)";
   console.log(message); // This will appear in CloudWatch Logs
 
   // Return a response object
