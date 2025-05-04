@@ -74,6 +74,7 @@ jobs:
       - name: Deploy using AWS SAM
         run: |
           sam deploy --stack-name ${{ env.STACK_NAME }} \
+            --s3-bucket mack-portfolio-sam-artifacts-ca-central-1 \
             --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
             --region ${{ secrets.AWS_REGION }} \
             --no-confirm-changeset \
