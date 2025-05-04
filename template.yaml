@@ -25,7 +25,7 @@ Resources:
     Properties:
       FunctionName: serverless-project-service-a # The name of the Lambda function
       CodeUri: service-a/ # Path to the code directory relative to template.yaml
-      Handler: index.handler # Points to the file and exported function (relative to CodeUri after build)
+      Handler: dist/index.handler # Points to the file and exported function (relative to CodeUri after build)
       Runtime: nodejs22.x # Specify the Node.js runtime (use version matching previous setup)
       Architectures:
         - x86_64
@@ -44,7 +44,7 @@ Resources:
     Properties:
       FunctionName: serverless-project-service-b
       CodeUri: service-b/
-      Handler: index.handler # Assumes build output is in 'dist/index.js'
+      Handler: dist/index.handler # Assumes build output is in 'dist/index.js'
       Runtime: nodejs22.x
       Architectures:
         - x86_64
