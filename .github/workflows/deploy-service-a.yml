@@ -59,23 +59,23 @@ jobs:
           echo "Running tests..."
           echo "No real tests configured yet." 
       
-     # Step 6: Create deployment package (.zip file)
-      - name: Package deployment zip
-        run: |
-          cd ${{ env.SERVICE_DIR }} # Go into service-a
-          cd dist # Go into the build output directory
-          echo "Creating deployment package..."
-          # Zip the contents of the dist directory
-          zip -r ../deployment-package.zip . 
-          cd .. # Go back to service-a directory
-          echo "Deployment package created: $(ls -l deployment-package.zip)"
+    # Step 6: Install AWS SAM CLI
+      # Python is usually pre-installed on GitHub runners
+      - name: Install AWS SAM CLI
+        run: pip install aws-sam-cli
 
-      # Step 7: Deploy to AWS Lambda
-      - name: Deploy to Lambda
+      # Step 7: Build the SAM application
+      # This step prepares the application for deployment, resolving dependencies, etc.
+      - name: Run sam build
+        run: sam build --template template.yaml
+
+      # Step 8: Deploy using AWS SAM
+      # Deploys the CloudFormation stack defined in template.yaml
+      - name: Deploy using AWS SAM
         run: |
-          cd ${{ env.SERVICE_DIR }} # Ensure we are in service-a directory for context
-          echo "Deploying deployment-package.zip to Lambda function serverless-project-service-a..."
-          aws lambda update-function-code \
-            --function-name serverless-project-service-a \
-            --zip-file fileb://deployment-package.zip
-          echo "Deployment complete!"
+          sam deploy --stack-name ${{ env.STACK_NAME }} \
+            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            --region ${{ secrets.AWS_REGION }} \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+          echo "SAM deployment complete!"
