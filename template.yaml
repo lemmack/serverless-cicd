@@ -60,4 +60,4 @@ Outputs:
   # Output the URL of the deployed API Gateway
   PortfolioApiUrl:
     Description: "API Gateway endpoint URL for Prod stage"
-    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Value: !Sub "https://${PortfolioHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
