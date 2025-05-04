@@ -16,7 +16,7 @@ jobs:
     # Define environment variables for the job
     env:
       SERVICE_DIR: service-b # Directory for Service B
-
+      STACK_NAME: portfolio-app-stack
     steps:
       # Step 1: Check out the repository code
       - name: Checkout code
