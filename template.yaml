@@ -44,7 +44,7 @@ Resources:
     Properties:
       FunctionName: serverless-project-service-b
       CodeUri: service-b/
-      Handler: dist/index.handler # Assumes build output is in 'dist/index.js'
+      Handler: index.handler # Assumes build output is in 'dist/index.js'
       Runtime: nodejs22.x
       Architectures:
         - x86_64
