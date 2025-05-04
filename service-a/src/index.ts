@@ -6,7 +6,7 @@ export const handler: Handler = async (event, context) => {
   // event: Contains data passed to the function (we don't use it yet)
   // context: Provides info about the invocation, function, execution env
 
-  const message: string = "Hello from Service A (v10-A)";
+  const message: string = "Hello from Service A (v11-A)";
   console.log(message); // This will appear in CloudWatch Logs
 
   // Return a response object (common format for API Gateway integration later)
