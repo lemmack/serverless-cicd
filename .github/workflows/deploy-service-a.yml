@@ -72,4 +72,4 @@ jobs:
       # Step 8: Deploy using AWS SAM
       # Deploys the CloudFormation stack defined in template.yaml
       - name: Deploy using AWS SAM
-        run: sam deploy --stack-name ${{ env.STACK_NAME }} --s3-bucket mack-portfolio-sam-artifacts-ca-central-1 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --region ${{ secrets.AWS_REGION }} --no-confirm-changeset --no-fail-on-empty-changeset
+        run: sam deploy --stack-name ${{ env.STACK_NAME }} --resolve-s3 --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --region ${{ secrets.AWS_REGION }} --no-confirm-changeset --no-fail-on-empty-changeset
