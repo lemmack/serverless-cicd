@@ -1,0 +1,63 @@
+# AWS SAM template to define the serverless application infrastructure
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31 # Tells CloudFormation this is a SAM template
+Description: >-
+  Portfolio project demonstrating two simple TypeScript Lambda functions
+  triggered by an HTTP API Gateway.
+
+# Optional: Define global settings for all functions if desired
+# Globals:
+#   Function:
+#     Timeout: 10 # Default timeout for all functions
+
+Resources:
+  # Define the HTTP API Gateway resource explicitly
+  ServerlessHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      # Add any specific API Gateway settings here if needed (e.g., CORS)
+      # For now, defaults are fine. SAM will configure Lambda integration permissions.
+      FailOnWarnings: true
+
+  # Define the Lambda function for Service A
+  ServiceAFunction:
+    Type: AWS::Serverless::Function # Defines a Lambda function
+    Properties:
+      FunctionName: serverless-project-service-a # The name of the Lambda function
+      CodeUri: service-a/ # Path to the code directory relative to template.yaml
+      Handler: dist/index.handler # Points to the file and exported function (relative to CodeUri after build)
+      Runtime: nodejs22.x # Specify the Node.js runtime (use version matching previous setup)
+      Architectures:
+        - x86_64
+      # Define how this function is triggered - via the HTTP API
+      Events:
+        ServiceAEndpoint: # A logical name for the event source
+          Type: HttpApi # Specify the trigger type is HTTP API
+          Properties:
+            ApiId: !Ref ServerlessHttpApi # Link to the HTTP API defined above
+            Path: /service-a # The URL path
+            Method: GET # The HTTP method
+
+  # Define the Lambda function for Service B
+  ServiceBFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: serverless-project-service-b
+      CodeUri: service-b/
+      Handler: dist/index.handler # Assumes build output is in 'dist/index.js'
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Events:
+        ServiceBEndpoint:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ServerlessHttpApi
+            Path: /service-b
+            Method: GET
+
+Outputs:
+  # Output the URL of the deployed API Gateway
+  PortfolioApiUrl:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
