@@ -48,28 +48,6 @@ The primary goal of this project was to learn and demonstrate fundamental concep
 * **CI/CD:** GitHub Actions
 * **CLI Tools:** AWS SAM CLI, AWS CLI, Git, npm
 
-## Folder Structure
-
-.
-├── .github/
-│   └── workflows/
-│       └── deploy-stack.yml      # Single CI/CD workflow for the entire stack
-├── service-a/
-│   ├── src/
-│   │   └── index.ts            # Source code for Service A
-│   ├── package.json
-│   ├── package-lock.json
-│   └── tsconfig.json
-├── service-b/
-│   ├── src/
-│   │   └── index.ts            # Source code for Service B
-│   ├── package.json
-│   ├── package-lock.json
-│   └── tsconfig.json
-├── .gitignore
-├── README.md                   # This file
-└── template.yaml               # AWS SAM template defining infrastructure
-
 ## Local Development & Testing
 
 1.  Clone the repository.
