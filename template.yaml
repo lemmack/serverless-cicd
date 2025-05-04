@@ -12,7 +12,7 @@ Description: >-
 
 Resources:
   # Define the HTTP API Gateway resource explicitly
-  ServerlessHttpApi:
+  PortfolioHttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
       # Add any specific API Gateway settings here if needed (e.g., CORS)
@@ -34,7 +34,7 @@ Resources:
         ServiceAEndpoint: # A logical name for the event source
           Type: HttpApi # Specify the trigger type is HTTP API
           Properties:
-            ApiId: !Ref ServerlessHttpApi # Link to the HTTP API defined above
+            ApiId: !Ref PortfolioHttpApi # Link to the HTTP API defined above
             Path: /service-a # The URL path
             Method: GET # The HTTP method
 
@@ -52,7 +52,7 @@ Resources:
         ServiceBEndpoint:
           Type: HttpApi
           Properties:
-            ApiId: !Ref ServerlessHttpApi
+            ApiId: !Ref PortfolioHttpApi
             Path: /service-b
             Method: GET
 
