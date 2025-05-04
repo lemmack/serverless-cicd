@@ -2,8 +2,6 @@
 
 This project demonstrates a basic serverless application consisting of two independent microservices deployed on AWS Lambda and exposed via AWS API Gateway. The entire infrastructure (Lambda functions, API Gateway, IAM Roles) is managed as code using the **AWS Serverless Application Model (SAM)**, and deployments are fully automated via a **single CI/CD pipeline** built with **GitHub Actions**.
 
-This project serves as a practical exercise combining concepts from **Project 5 (Serverless Microservices Application)** and **Project 8 (DevOps CI/CD Pipeline)** described in the "Strategic Portfolio Projects for Aspiring Software Developers in Canada (2025)" guide, focusing on IaC and robust automation.
-
 ## Live API Endpoints
 
 You can test the live deployed services here:
