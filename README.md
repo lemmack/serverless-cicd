@@ -1,87 +1,115 @@
 # Simple Serverless Microservices with CI/CD on AWS
 
-This project demonstrates a basic serverless application consisting of two independent microservices deployed on AWS Lambda and exposed via AWS API Gateway. It features automated deployment using CI/CD pipelines built with GitHub Actions.
+This project demonstrates a basic serverless application consisting of two independent microservices deployed on AWS Lambda and exposed via AWS API Gateway. The entire infrastructure (Lambda functions, API Gateway, IAM Roles) is managed as code using the **AWS Serverless Application Model (SAM)**, and deployments are fully automated via a **single CI/CD pipeline** built with **GitHub Actions**.
+
+This project serves as a practical exercise combining concepts from **Project 5 (Serverless Microservices Application)** and **Project 8 (DevOps CI/CD Pipeline)** described in the "Strategic Portfolio Projects for Aspiring Software Developers in Canada (2025)" guide, focusing on IaC and robust automation.
 
 ## Live API Endpoints
 
 You can test the live deployed services here:
 
-* **Service A:** [`https://xqk9p35gtl.execute-api.ca-central-1.amazonaws.com/service-a`](https://xqk9p35gtl.execute-api.ca-central-1.amazonaws.com/service-a)
-* **Service B:** [`https://xqk9p35gtl.execute-api.ca-central-1.amazonaws.com/service-b`](https://xqk9p35gtl.execute-api.ca-central-1.amazonaws.com/service-b)
+* **Service A:** [`https://xq3eoap1mh.execute-api.ca-central-1.amazonaws.com/service-a`](https://xq3eoap1mh.execute-api.ca-central-1.amazonaws.com/service-a)
+* **Service B:** [`https://xq3eoap1mh.execute-api.ca-central-1.amazonaws.com/service-b`](https://xq3eoap1mh.execute-api.ca-central-1.amazonaws.com/service-b)
 
 ## Overview & Goal
 
 The primary goal of this project was to learn and demonstrate fundamental concepts in modern cloud-native application development, specifically:
 
-* **Serverless Computing:** Building and deploying functions on AWS Lambda without managing underlying servers.
+* **Serverless Computing:** Building and deploying functions on AWS Lambda.
 * **Microservice Architecture:** Structuring the application as small, independent services (Service A and Service B).
 * **API Gateway:** Exposing serverless functions via standard HTTP endpoints using AWS API Gateway (HTTP API).
-* **DevOps & CI/CD:** Automating the build, packaging, and deployment process using GitHub Actions.
-* **Cloud Services:** Gaining hands-on experience with core AWS services (Lambda, API Gateway, IAM).
-* **TypeScript:** Building backend services using TypeScript for improved code quality and maintainability.
+* **Infrastructure as Code (IaC):** Defining and managing all AWS resources (Lambda, API Gateway, IAM Roles) declaratively using AWS SAM (`template.yaml`).
+* **DevOps & CI/CD:** Automating the build, packaging, and deployment process for the entire application stack using a single GitHub Actions workflow.
+* **Cloud Services:** Gaining hands-on experience with core AWS services (Lambda, API Gateway, IAM, CloudFormation, S3 for artifacts).
+* **TypeScript:** Building backend services using TypeScript.
 
 ## Features
 
 * Two independent microservices (`service-a`, `service-b`) written in TypeScript.
-* Each service deployed as a separate AWS Lambda function.
-* Services exposed via public HTTP GET endpoints through AWS API Gateway.
-* Automated CI/CD pipeline using GitHub Actions for each service:
-    * Triggered on push to the `main` branch if relevant service files are changed.
-    * Installs dependencies (`npm ci`).
-    * Compiles TypeScript (`npm run build`).
-    * Packages deployment artifact (`.zip`).
-    * Deploys updated code to the corresponding AWS Lambda function using AWS CLI (`aws lambda update-function-code`).
+* Infrastructure (Lambda functions, HTTP API, IAM Roles) defined using AWS SAM (`template.yaml`).
+* Services exposed via public HTTP GET endpoints through the SAM-managed AWS API Gateway.
+* Automated CI/CD pipeline using a **single GitHub Actions workflow**:
+    * Triggered on push to the `main` branch if service code (`service-a/**`, `service-b/**`), the SAM template (`template.yaml`), or the workflow file itself changes.
+    * Builds both services sequentially (`npm ci` && `npm run build`).
+    * Builds the SAM application (`sam build`).
+    * Deploys the entire CloudFormation stack (`sam deploy`) using an S3 bucket for artifacts.
+    * Uses concurrency control (`cancel-in-progress: false`) to ensure safe, sequential deployments.
 * Secure handling of AWS credentials using GitHub Secrets.
 
 ## Technologies Used
 
 * **Language:** TypeScript
-* **Runtime:** Node.js (v20.x recommended)
+* **Runtime:** Node.js (v20.x)
 * **Cloud Provider:** Amazon Web Services (AWS)
     * **Compute:** AWS Lambda
     * **API:** AWS API Gateway (HTTP API)
+    * **IaC / Deployment:** AWS SAM (Serverless Application Model), AWS CloudFormation
+    * **Storage:** AWS S3 (for SAM deployment artifacts)
     * **Identity:** AWS IAM (Identity and Access Management)
+    * **Logging:** AWS CloudWatch Logs
 * **CI/CD:** GitHub Actions
-* **Version Control:** Git & GitHub
-* **Package Manager:** npm
+* **CLI Tools:** AWS SAM CLI, AWS CLI, Git, npm
 
-## Local Development
+## Folder Structure
+
+.
+├── .github/
+│   └── workflows/
+│       └── deploy-stack.yml      # Single CI/CD workflow for the entire stack
+├── service-a/
+│   ├── src/
+│   │   └── index.ts            # Source code for Service A
+│   ├── package.json
+│   ├── package-lock.json
+│   └── tsconfig.json
+├── service-b/
+│   ├── src/
+│   │   └── index.ts            # Source code for Service B
+│   ├── package.json
+│   ├── package-lock.json
+│   └── tsconfig.json
+├── .gitignore
+├── README.md                   # This file
+└── template.yaml               # AWS SAM template defining infrastructure
+
+## Local Development & Testing
 
 1.  Clone the repository.
-2.  Navigate into the respective service directory (`cd service-a` or `cd service-b`).
-3.  Install dependencies: `npm install` (or `npm ci`)
-4.  Compile TypeScript: `npm run build`
-5.  Run the compiled code (for basic console output): `npm run start` (or `node dist/index.js`)
+2.  Ensure you have Node.js, npm, AWS CLI, and AWS SAM CLI installed and configured with appropriate AWS credentials.
+3.  Navigate into a service directory (`cd service-a` or `cd service-b`).
+4.  Install dependencies: `npm ci`
+5.  Compile TypeScript: `npm run build`
+6.  (Optional) Invoke locally using SAM (requires Docker for Lambda environment simulation): `sam local invoke ServiceAFunction -t ../template.yaml` (run from service directory, adjust path to template) or use event payloads.
 
-*(Note: Running locally does not simulate the full Lambda/API Gateway environment.)*
+## CI/CD Pipeline (`deploy-stack.yml`)
 
-## CI/CD Pipeline
+The deployment process is fully automated using a single GitHub Actions workflow:
 
-The deployment process is fully automated using GitHub Actions:
+1.  **Trigger:** A push to the `main` branch that includes changes in `service-a/**`, `service-b/**`, `template.yaml`, or the workflow file itself.
+2.  **Concurrency:** Ensures only one deployment runs at a time per branch (`cancel-in-progress: false`).
+3.  **Environment Setup:** Checks out code, sets up Node.js v20, configures AWS credentials via GitHub Secrets.
+4.  **Build Services:** Runs `npm ci && npm run build` sequentially for both `service-a` and `service-b`.
+5.  **Build SAM App:** Runs `sam build` using `template.yaml` to prepare deployment artifacts.
+6.  **Deploy Stack:** Runs `sam deploy` which packages artifacts, uploads them to the designated S3 bucket, and creates/updates the `portfolio-app-stack` CloudFormation stack, deploying infrastructure and code changes.
 
-1.  **Trigger:** A push to the `main` branch that includes changes within a specific service's directory (`service-a/**` or `service-b/**`) or its corresponding workflow file triggers the respective workflow.
-2.  **Environment Setup:** The workflow runs on an `ubuntu-latest` runner, checks out the code, sets up Node.js v20, and configures AWS credentials securely using secrets stored in GitHub repository settings (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`).
-3.  **Build & Test:** Dependencies are installed using `npm ci`, and the TypeScript code is compiled using `npm run build`. Placeholder test steps are included.
-4.  **Package:** The compiled JavaScript code in the `dist` directory is packaged into a `.zip` file.
-5.  **Deploy:** The AWS CLI command `aws lambda update-function-code` is used to upload the `.zip` package and update the code of the target Lambda function (`service-a-portfolio` or `service-b-portfolio`).
-
-Workflow files:
-* [`./.github/workflows/deploy-service-a.yml`](./.github/workflows/deploy-service-a.yml)
-* [`./.github/workflows/deploy-service-b.yml`](./.github/workflows/deploy-service-b.yml)
+Workflow file: [`./.github/workflows/deploy-stack.yml`](./.github/workflows/deploy-stack.yml)
 
 ## Challenges & Learning
 
-* **PowerShell Execution Policy:** Encountered initial issues running `npm` commands on Windows due to PowerShell security policies. Resolved by running `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` in an administrative PowerShell.
-* **CI/CD Dependency Issues:** Workflow builds initially failed with TypeScript errors (`TS2307 Cannot find module 'aws-lambda'`). This was due to forgetting to commit the `package-lock.json` files after installing the `@types/aws-lambda` dev dependency locally. Resolved by ensuring `package.json` and `package-lock.json` were always committed for each service after dependency changes.
-* **API Gateway Configuration:** Navigating the AWS Console UI for API Gateway required adapting the setup flow (creating integrations before routes).
-* **IAM & Security:** Learned the importance of using IAM users and access keys for programmatic access instead of root credentials, and storing sensitive keys securely using GitHub Secrets.
+This project involved overcoming several common cloud development hurdles:
+
+* **Initial Setup:** Configuring PowerShell execution policies on Windows for `npm`. Setting up Git identity.
+* **CI/CD Dependencies:** Ensuring `package-lock.json` files were committed so `npm ci` could correctly install dev dependencies (like `@types/aws-lambda`) in the workflow environment.
+* **CloudFormation States:** Dealing with the `ROLLBACK_COMPLETE` state by deleting the failed stack before retrying deployment. Resolving resource conflicts (`Function already exists`) by deleting manually created resources before the first IaC deployment.
+* **Lambda Handler Path:** Debugging `Runtime.ImportModuleError` by correlating the `Handler` setting in `template.yaml` (`dist/index.handler`) with the actual package structure created by `sam build`/`deploy`.
+* **Deployment Concurrency:** Initially using two separate workflows led to deployment collisions and inconsistent states (one service breaking when the other deployed). This was resolved by refactoring to a **single workflow** managing the entire stack deployment atomically, using GitHub Actions concurrency control (`cancel-in-progress: false`) for safety.
+* **SAM/S3 Requirement:** Understanding that `sam deploy` requires an S3 bucket (`--s3-bucket` or `--resolve-s3`) for storing deployment artifacts before CloudFormation deployment.
 
 ## Potential Future Enhancements
 
-* Implement meaningful unit/integration tests and run them in the CI/CD pipeline.
-* Add a database (e.g., AWS DynamoDB) and have services interact with it.
-* Define AWS resources (Lambda, API Gateway, IAM Roles) using Infrastructure as Code (IaC) like AWS SAM, AWS CDK, or Terraform.
-* Refine IAM permissions for the deployment user and Lambda execution roles to follow the principle of least privilege.
-* Add error handling and more robust logging within the Lambda functions.
-* Explore advanced API Gateway features (e.g., request validation, custom authorizers).
+* Implement meaningful unit/integration tests (e.g., using Jest) and add an `npm test` stage to the CI/CD pipeline.
+* Add a database (e.g., AWS DynamoDB defined within `template.yaml`) and implement service logic to interact with it.
+* Refine IAM permissions for the deployment user and Lambda execution roles to follow the principle of least privilege (define specific IAM policies in `template.yaml`).
+* Add structured logging and error handling within the Lambda functions.
+* Explore advanced API Gateway features defined within the SAM template.
 * Set up a custom domain name for the API Gateway endpoint.
