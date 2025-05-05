@@ -1,21 +1,22 @@
-// service-b/src/index.ts
-import { Handler } from 'aws-lambda'; // Optional: Provides type safety
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context, Handler } from 'aws-lambda';
 
-// Define the handler function
-export const handler: Handler = async (event, context) => {
-  const message: string = "World from Service B (v12-B-Isolated Deploy Test)";
-  console.log(message); // This will appear in CloudWatch Logs
+// Separate core logic
+export function processServiceBEvent(event: APIGatewayProxyEvent): { message: string; eventData: APIGatewayProxyEvent } {
+  const message: string = "Hello from Service B (v11-B)";
+  console.log(message);
+  return { message, eventData: event };
+}
 
-  // Return a response object
-  const response = {
+// Handler uses the core logic function
+export const handler: Handler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+  const result = processServiceBEvent(event);
+
+  const response: APIGatewayProxyResult = {
     statusCode: 200,
     headers: {
-       "Content-Type": "application/json"
+      "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-       message: message,
-       eventData: event
-    }),
+    body: JSON.stringify(result),
   };
 
   return response;

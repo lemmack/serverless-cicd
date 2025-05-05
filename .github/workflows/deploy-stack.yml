@@ -67,34 +67,29 @@ jobs:
           cd ..
           echo "Service B build complete."
 
-      # 6. Run tests (Placeholder for Service A)
-      - name: Run tests for Service A
-        run: |
-          cd service-a
-          echo "Running tests for Service A..."
-          # npm test
-          echo "No real tests configured yet."
-          cd ..
-
-      # 7. Run tests (Placeholder for Service B)
-      - name: Run tests for Service B
-        run: |
-          cd service-b
-          echo "Running tests for Service B..."
-          # npm test
-          echo "No real tests configured yet."
-          cd ..
-
-      # 8. Install AWS SAM CLI
+      # 6. Install AWS SAM CLI
       - name: Install AWS SAM CLI
         run: pip install aws-sam-cli
 
-      # 9. Run sam build (Builds BOTH functions based on template)
+      # 7. Run sam build (Builds BOTH functions based on template)
       # Creates deployment artifacts in .aws-sam/build
       - name: Run sam build
         run: sam build --template template.yaml
 
-      # 10. Deploy using AWS SAM (Deploys the entire stack once)
+      # 8. Run tests for all Services
+      - name: Run Unit Tests Service A
+         run: |
+          cd service-a
+          npm test
+          cd ..
+
+      - name: Run Unit Tests Service B
+        run: |
+          cd service-b
+          npm test
+          cd ..
+
+      # 9. Deploy using AWS SAM (Deploys the entire stack once)
       - name: Deploy using AWS SAM
         run: |
           sam deploy --stack-name ${{ env.STACK_NAME }} \
