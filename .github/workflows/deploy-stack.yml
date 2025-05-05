@@ -78,7 +78,7 @@ jobs:
 
       # 8. Run tests for all Services
       - name: Run Unit Tests Service A
-         run: |
+        run: |
           cd service-a
           npm test
           cd ..
